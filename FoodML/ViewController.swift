@@ -10,7 +10,7 @@ import CoreML
 import Vision
 
 class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    //
+    
     
     @IBOutlet weak var imageView: UIImageView!
     
@@ -21,12 +21,12 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         
         imagePicker.delegate = self
         imagePicker.sourceType = .camera
-        imagePicker.allowsEditing = false //to be able to edit the image set this to true
+        imagePicker.allowsEditing = true //to be able to edit the image set this to true
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         
-        if let selectedImage = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
+        if let selectedImage = info[UIImagePickerController.InfoKey.editedImage] as? UIImage {
             imageView.image = selectedImage
             
             guard let ciImage = CIImage(image: selectedImage) else {
@@ -45,33 +45,40 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         
         let request = VNCoreMLRequest(model: model) { (request, error) in
             
-            guard let results = request.results as? [VNClassificationObservation] else {
-                fatalError("Model failed to process image")
+            let results = request.results?.first as? VNClassificationObservation
+            self.navigationItem.title = results?.identifier.capitalized
             }
-            print(results)
-            if let firstResult = results.first {
-                if firstResult.identifier.contains("bottle") {
-                    self.navigationItem.title = "Bottle!"
-                } else {
-                    self.navigationItem.title = "Not Bottle!"
-                }
-            }
-        }
-        
         let handler = VNImageRequestHandler(ciImage: image)
+                
+                do {
+                    try handler.perform([request])
+                } catch {
+                    print(error)
+                }
+            //print(results)
+           // if let firstResult = results.first {
+                
+                //print(firstResult.identifier.description)
+               // self.navigationItem.title = firstResult.identifier
+                
+//                if firstResult.identifier.contains("bottle") {
+//                    self.navigationItem.title = "Bottle!"
+//                } else {
+//                    self.navigationItem.title = "Not Bottle!"
+//                }
+            }
         
-        do {
-            try handler.perform([request])
-        } catch {
-            print(error)
-        }
-    }
-
+        
+        
+    
+    
+    
     @IBAction func cameraButtonTapped(_ sender: UIBarButtonItem) {
         
         present(imagePicker, animated: true)
     }
     
-    
 }
+    
+    
 
