@@ -45,9 +45,12 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         
         let request = VNCoreMLRequest(model: model) { (request, error) in
             
-            let results = request.results?.first as? VNClassificationObservation
-            self.navigationItem.title = results?.identifier.capitalized
+            guard let results = request.results?.first as? VNClassificationObservation else {
+                fatalError("Couldnt classift the image")
             }
+            self.navigationItem.title = results.identifier.capitalized
+            }
+        
         let handler = VNImageRequestHandler(ciImage: image)
                 
                 do {
